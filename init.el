@@ -51,6 +51,7 @@
 (global-set-key (kbd "C-c w") 'count-words)
 (global-set-key (kbd "C-x /") 'comment-region)
 (global-set-key (kbd "C-c a") 'org-agenda)
+(global-set-key (kbd "C-c d") 'deft)
 
 ;;;*** which-key
 
@@ -128,6 +129,14 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
+(use-package epa-file
+    :config
+    (setq epa-file-encrypt-to '("clintonboys@icloud.com"))
+    :custom
+    (epa-file-select-keys 'silent))
+(custom-set-variables '(epg-gpg-program  "/usr/local/MacGPG2/bin/gpg2"))
+(epa-file-enable)
+
 ;; (defun clinton/org-font-setup ()
 ;;   ;; Replace list hyphen with dot
 ;;   (font-lock-add-keywords 'org-mode
@@ -158,7 +167,7 @@
 
 
  (custom-set-faces
- '(default ((t (:foreground "#bbc2cf"))))
+ '(default     ((t (:foreground "#BBC2CF"))))
  '(org-level-1 ((t (:foreground "#BF9D7A"))))
  '(org-level-2 ((t (:foreground "#E4E9CD"))))
  '(org-level-3 ((t (:foreground "#EBF2EA"))))
@@ -268,35 +277,64 @@
     (find-file (get-journal-file-yesterday)))
  )
 
-(if (not (string= (system-name) "Clinton-Boys-MacBook-Pro.local"))
-    ; Do not load org-roam on my work machine
-  (use-package org-roam
-          :hook 
-          (after-init . org-roam-mode)
-          :custom
-          (org-roam-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
-          :bind (:map org-roam-mode-map
-                  (("C-c n l" . org-roam)
-                   ("C-c n f" . org-roam-find-file)
-                   ("C-c n b" . org-roam-switch-to-buffer)
-                   ("C-c n g" . org-roam-show-graph))
-                  :map org-mode-map
-                  (("C-c i" . org-roam-insert))))  
+(if (string= (system-name) "clinton.local")
+  ; Do not load org-roam on my work machine
+(use-package org-roam
+        :hook 
+        (after-init . org-roam-mode)
+        :custom
+        (org-roam-directory "~/roam")
+        :bind (:map org-roam-mode-map
+                (("C-c n l" . org-roam)
+                 ("C-c n f" . org-roam-find-file)
+                 ("C-c n b" . org-roam-switch-to-buffer)
+                 ("C-c n g" . org-roam-show-graph))
+                :map org-mode-map
+                (("C-c i" . org-roam-insert))))
 
-  (setq org-roam-db-location "/Users/clinton/org-roam.db")
-  (add-hook 'after-init-hook 'ivy-mode)
-  (setq org-roam-capture-templates
-    '(("d" "default" plain (function org-roam-capture--get-point)
-       "%?"
-       :file-name "%<%Y%m%d%H%M%S>-${slug}"
-       :head "#+TITLE: ${title}\n"
-       :unnarrowed t)))
+(setq org-roam-db-location "/Users/clinton/org-roam.db"))
 
-  (use-package 'deft)
-  (global-set-key "\C-cd" 'deft)
-  (add-hook 'deft-mode-hook (lambda () (visual-line-mode 0)))
-  (setq-default truncate-lines t)
-  (setq deft-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
+ (defun clinton/deft-setup ()
+    (visual-line-mode 0))
 
-  (org-reload)
-)
+
+ (use-package deft
+   :hook (deft-mode . clinton/deft-setup)
+   :init
+   (setq deft-directory "~/roam")
+   (setq-default truncate-lines t)
+ )
+ (require 'deft)
+
+(org-babel-do-load-languages
+  'org-babel-load-languages
+  '((emacs-lisp . t)
+    (python . t)))
+
+(defvar clinton/init-org-file (concat user-emacs-directory "init.org"))
+(defvar clinton/init-el-file  (concat user-emacs-directory "init.el"))
+
+(defun clinton/tangle-on-save ()
+  (when (equal (buffer-file-name)
+               (expand-file-name clinton/init-org-file))
+    (let ((org-confirm-babel-evaluate nil))
+      (org-babel-tangle)
+      (message "init.el tangled from init.org"))))
+
+(add-hook 'after-save-hook 'clinton/tangle-on-save)
+
+(defun clinton/markdown-mode-setup ()
+  (variable-pitch-mode 1)
+  (visual-line-mode 1))
+
+(use-package markdown-mode
+  :ensure t
+  :hook (markdown-mode . clinton/markdown-mode-setup)
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md\\'" . gfm-mode)
+         ("\\.md\\'" . markdown-mode)
+         ("\\.markdown\\'" . markdown-mode))
+  :init (setq markdown-command "multimarkdown")
+  )
+
+(use-package magit)
