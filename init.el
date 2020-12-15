@@ -1,32 +1,19 @@
-;;* emacs configuration
-;;  Clinton Boys
-;;  December 2020
-
-;;**Miscellaneous
-;Don't let custom-set-variables dirty the init.el file.
 (setq custom-file (concat user-emacs-directory "/custom.el"))
 
-;;** Package system
-
 (require 'package)
-
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")
-			 ("org" . "http://orgmode.org/elpa/")))
+                         ("elpa"  . "https://elpa.gnu.org/packages/")
+                         ("org"   . "http://orgmode.org/elpa/")))
 
 (package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))
 
-  ;; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 
 (require 'use-package)
 (setq use-package-always-ensure t)
-
-;;** Initial UI
 
 (defvar clinton/default-font-size 140)
 (defvar clinton/default-variable-font-size 140)
@@ -43,12 +30,12 @@
 
 ;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
+		    org-agenda-mode-hook
                 term-mode-hook
                 shell-mode-hook
                 treemacs-mode-hook
                 eshell-mode-hook))
   (add-hook mode (lambda () (display-line-numbers-mode 0))))
-(add-hook 'org-agenda-mode-hook (lambda () (display-line-numbers-mode -1)))
 
 (set-face-attribute 'default nil :font "Fira Code" :height clinton/default-font-size :weight 'light)
 
@@ -57,9 +44,6 @@
 
 ;; Set the variable pitch face
 (set-face-attribute 'variable-pitch nil :font "Fira Code" :height clinton/default-variable-font-size :weight 'light)
-
-
-;;** Keybindings
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -90,8 +74,6 @@
 ;;     "t"  '(:ignore t :which-key "toggles")
 ;;     "tt" '(counsel-load-theme :which-key "choose theme")))
 
-;; **Appearance
-
 (use-package doom-themes
   :init (load-theme 'doom-one t))
 
@@ -106,9 +88,7 @@
 (setq ns-use-proxy-icon  nil)
 (setq frame-title-format "emacs")
 
-(setq-default line-spacing 0.35)
-
-;;**Ivy and counsel
+(setq-default line-spacing 0.25)
 
 (use-package ivy
   :diminish
@@ -121,14 +101,14 @@
   :init
   (ivy-rich-mode 1))
 
-;; (use-package counsel
-;;   :bind ("C-x b" . 'counsel-switch-buffer)
-;;   :custom
-;;   (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-;;   :config
-;;   (counsel-mode 1))
 
-;;**Helpful
+(use-package counsel
+  :bind ("C-x b" . 'counsel-switch-buffer)
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  :config
+  (counsel-mode 1))
+
 ;;The helpful package improves emacs default help buffers.
 
 (use-package helpful
@@ -140,9 +120,6 @@
   ([remap describe-command] . helpful-command)
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
-
-
-;;**Org
 
 (custom-set-faces
  '(default ((t (:foreground "#bbc2cf"))))
@@ -157,7 +134,6 @@
   (variable-pitch-mode 1)
   (visual-line-mode 1))
 
-
 (use-package org
   :pin org
   :hook (org-mode . clinton/org-mode-setup)
@@ -169,7 +145,7 @@
   (setq org-log-into-drawer t)
 
   (setq org-agenda-files
-	'("~/Dropbox/org/inbox.org"
+        '("~/Dropbox/org/inbox.org"
           "~/Dropbox/org/technical.org"
           "~/Dropbox/org/creative.org"
           "~/Dropbox/org/personal.org"
@@ -177,7 +153,7 @@
           "~/Dropbox/org/lists.org"
           "~/Dropbox/org/gmail_cal.org"
           "~/Dropbox/org/icloud_cal.org"))
-       
+
  (require 'org-habit)
  (add-to-list 'org-modules 'org-habit)
  (setq org-habit-graph-column 60)
@@ -187,10 +163,8 @@
      (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
  (setq org-refile-targets
-   '(("Archive.org" :maxlevel . 1)
-     ("Tasks.org" :maxlevel . 1)))
-
- ;; Save Org buffers after refiling!
+       '((org-agenda-files :maxlevel . 3)))
+ (setq org-refile-use-outline-path 'file)
  (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
  (setq org-tag-alist
@@ -207,8 +181,22 @@
       ("note" . ?n)
       ("idea" . ?i))))
 
-
-;;**org journal
+ (setq org-agenda-custom-commands
+     '(("a" "Agenda"
+    ((agenda ""
+             ((org-agenda-span
+               (quote day))
+              (org-deadline-warning-days 14)))
+     (todo "TODO"
+           ((org-agenda-overriding-header "To Refile")
+            (org-agenda-files
+             (quote
+              ("/Users/clinton/Dropbox/org/inbox.org")))))
+     (todo "NEXT"
+           ((org-agenda-overriding-header "Projects")
+            (org-agenda-files
+             (quote
+              ("/Users/clinton/Dropbox/org/projects.org")))))))))
 
 (use-package org-journal
   :bind
@@ -243,33 +231,35 @@
     (find-file (get-journal-file-yesterday)))
  )
 
-;;**org roam
-(use-package org-roam
-        :hook 
-        (after-init . org-roam-mode)
-        :custom
-        (org-roam-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
-        :bind (:map org-roam-mode-map
-                (("C-c n l" . org-roam)
-                 ("C-c n f" . org-roam-find-file)
-                 ("C-c n b" . org-roam-switch-to-buffer)
-                 ("C-c n g" . org-roam-show-graph))
-                :map org-mode-map
-                (("C-c i" . org-roam-insert))))  
+(if (not (string= (system-name) "Clinton-Boys-MacBook-Pro.local"))
+    ; Do not load org-roam on my work machine
+  (use-package org-roam
+          :hook 
+          (after-init . org-roam-mode)
+          :custom
+          (org-roam-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
+          :bind (:map org-roam-mode-map
+                  (("C-c n l" . org-roam)
+                   ("C-c n f" . org-roam-find-file)
+                   ("C-c n b" . org-roam-switch-to-buffer)
+                   ("C-c n g" . org-roam-show-graph))
+                  :map org-mode-map
+                  (("C-c i" . org-roam-insert))))  
 
-(setq org-roam-db-location "/Users/clinton/org-roam.db")
-(add-hook 'after-init-hook 'ivy-mode)
-(setq org-roam-capture-templates
-  '(("d" "default" plain (function org-roam-capture--get-point)
-     "%?"
-     :file-name "%<%Y%m%d%H%M%S>-${slug}"
-     :head "#+TITLE: ${title}\n"
-     :unnarrowed t)))
+  (setq org-roam-db-location "/Users/clinton/org-roam.db")
+  (add-hook 'after-init-hook 'ivy-mode)
+  (setq org-roam-capture-templates
+    '(("d" "default" plain (function org-roam-capture--get-point)
+       "%?"
+       :file-name "%<%Y%m%d%H%M%S>-${slug}"
+       :head "#+TITLE: ${title}\n"
+       :unnarrowed t)))
 
-(use-package 'deft)
-(global-set-key "\C-cd" 'deft)
-(add-hook 'deft-mode-hook (lambda () (visual-line-mode 0)))
-(setq-default truncate-lines t)
-(setq deft-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
+  (use-package 'deft)
+  (global-set-key "\C-cd" 'deft)
+  (add-hook 'deft-mode-hook (lambda () (visual-line-mode 0)))
+  (setq-default truncate-lines t)
+  (setq deft-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
 
-(org-reload)
+  (org-reload)
+)

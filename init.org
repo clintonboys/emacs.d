@@ -1,37 +1,35 @@
-* emacs configuration
-Clinton Boys
-December 2020
+#+TITLE: emacs configuration
+#+AUTHOR: Clinton Boys
+#+BABEL: :cache yes
+#+PROPERTY: header-args :tangle yes
 
 ** Miscellaneous
 Don't let custom-set-variables dirty the init.el file.
 
-#+begin_src emacs-lisp
+#+BEGIN_SRC emacs-lisp
 
 (setq custom-file (concat user-emacs-directory "/custom.el"))
 
-#+end_src
+#+END_SRC
 
 ** Package system
 
 #+begin_src emacs-lisp
 
-(require 'package)
+  (require 'package)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                           ("elpa"  . "https://elpa.gnu.org/packages/")
+                           ("org"   . "http://orgmode.org/elpa/")))
 
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("org"   . "https://orgmode.org/elpa/")
-                         ("elpa"  . "https://elpa.gnu.org/packages/")
-            	     ("org"   . "http://orgmode.org/elpa/")))
+  (package-initialize)
+  (unless package-archive-contents
+    (package-refresh-contents))
 
-(package-initialize)
-(unless package-archive-contents
-  (package-refresh-contents))
+  (unless (package-installed-p 'use-package)
+    (package-install 'use-package))
 
-; Initialize use-package on non-Linux platforms
-(unless (package-installed-p 'use-package)
-  (package-install 'use-package))
-
-(require 'use-package)
-(setq use-package-always-ensure t)
+  (require 'use-package)
+  (setq use-package-always-ensure t)
 
 #+end_src
 
@@ -143,12 +141,13 @@ Don't let custom-set-variables dirty the init.el file.
   :init
   (ivy-rich-mode 1))
 
-;; (use-package counsel
-;;   :bind ("C-x b" . 'counsel-switch-buffer)
-;;   :custom
-;;   (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-;;   :config
-;;   (counsel-mode 1))
+
+(use-package counsel
+  :bind ("C-x b" . 'counsel-switch-buffer)
+  :custom
+  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+  :config
+  (counsel-mode 1))
 
 #+end_src
 
@@ -170,75 +169,90 @@ Don't let custom-set-variables dirty the init.el file.
 
 #+end_src
 
-** Org
+** org-mode
 
 #+begin_src emacs-lisp
 
-(custom-set-faces
- '(default ((t (:foreground "#bbc2cf"))))
- '(org-level-1 ((t (:foreground "#BF9D7A"))))
- '(org-level-2 ((t (:foreground "#E4E9CD"))))
- '(org-level-3 ((t (:foreground "#EBF2EA"))))
- '(org-level-4 ((t (:foreground "#0ABDA0"))))
- '(org-level-5 ((t (:foreground "#80ADD7")))))
+  (custom-set-faces
+   '(default ((t (:foreground "#bbc2cf"))))
+   '(org-level-1 ((t (:foreground "#BF9D7A"))))
+   '(org-level-2 ((t (:foreground "#E4E9CD"))))
+   '(org-level-3 ((t (:foreground "#EBF2EA"))))
+   '(org-level-4 ((t (:foreground "#0ABDA0"))))
+   '(org-level-5 ((t (:foreground "#80ADD7")))))
 
-(defun clinton/org-mode-setup ()
-  (org-indent-mode)
-  (variable-pitch-mode 1)
-  (visual-line-mode 1))
+  (defun clinton/org-mode-setup ()
+    (org-indent-mode)
+    (variable-pitch-mode 1)
+    (visual-line-mode 1))
 
-(use-package org
-  :pin org
-  :hook (org-mode . clinton/org-mode-setup)
-  :config
-  (setq org-ellipsis " ▾")
+  (use-package org
+    :pin org
+    :hook (org-mode . clinton/org-mode-setup)
+    :config
+    (setq org-ellipsis " ▾")
 
-  (setq org-agenda-start-with-log-mode t)
-  (setq org-log-done 'time)
-  (setq org-log-into-drawer t)
+    (setq org-agenda-start-with-log-mode t)
+    (setq org-log-done 'time)
+    (setq org-log-into-drawer t)
 
-  (setq org-agenda-files
-	'("~/Dropbox/org/inbox.org"
-          "~/Dropbox/org/technical.org"
-          "~/Dropbox/org/creative.org"
-          "~/Dropbox/org/personal.org"
-          "~/Dropbox/org/projects.org"
-          "~/Dropbox/org/lists.org"
-          "~/Dropbox/org/gmail_cal.org"
-          "~/Dropbox/org/icloud_cal.org"))
-       
- (require 'org-habit)
- (add-to-list 'org-modules 'org-habit)
- (setq org-habit-graph-column 60)
+    (setq org-agenda-files
+          '("~/Dropbox/org/inbox.org"
+            "~/Dropbox/org/technical.org"
+            "~/Dropbox/org/creative.org"
+            "~/Dropbox/org/personal.org"
+            "~/Dropbox/org/projects.org"
+            "~/Dropbox/org/lists.org"
+            "~/Dropbox/org/gmail_cal.org"
+            "~/Dropbox/org/icloud_cal.org"))
 
- (setq org-todo-keywords
-   '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
-     (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
+   (require 'org-habit)
+   (add-to-list 'org-modules 'org-habit)
+   (setq org-habit-graph-column 60)
 
- (setq org-refile-targets
-   '(("Archive.org" :maxlevel . 1)
-     ("Tasks.org" :maxlevel . 1)))
+   (setq org-todo-keywords
+     '((sequence "TODO(t)" "NEXT(n)" "|" "DONE(d!)")
+       (sequence "BACKLOG(b)" "PLAN(p)" "READY(r)" "ACTIVE(a)" "REVIEW(v)" "WAIT(w@/!)" "HOLD(h)" "|" "COMPLETED(c)" "CANC(k@)")))
 
- ;; Save Org buffers after refiling!
- (advice-add 'org-refile :after 'org-save-all-org-buffers)
+   (setq org-refile-targets
+         '((org-agenda-files :maxlevel . 3)))
+   (setq org-refile-use-outline-path 'file)
+   (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
- (setq org-tag-alist
-   '((:startgroup)
-      ; Put mutually exclusive tags here
-      (:endgroup)
-      ("@errand" . ?E)
-      ("@home" . ?H)
-      ("@work" . ?W)
-      ("agenda" . ?a)
-      ("planning" . ?p)
-      ("publish" . ?P)
-      ("batch" . ?b)
-      ("note" . ?n)
-      ("idea" . ?i))))
+   (setq org-tag-alist
+     '((:startgroup)
+        ; Put mutually exclusive tags here
+        (:endgroup)
+        ("@errand" . ?E)
+        ("@home" . ?H)
+        ("@work" . ?W)
+        ("agenda" . ?a)
+        ("planning" . ?p)
+        ("publish" . ?P)
+        ("batch" . ?b)
+        ("note" . ?n)
+        ("idea" . ?i))))
+
+   (setq org-agenda-custom-commands
+       '(("a" "Agenda"
+      ((agenda ""
+               ((org-agenda-span
+                 (quote day))
+                (org-deadline-warning-days 14)))
+       (todo "TODO"
+             ((org-agenda-overriding-header "To Refile")
+              (org-agenda-files
+               (quote
+                ("/Users/clinton/Dropbox/org/inbox.org")))))
+       (todo "NEXT"
+             ((org-agenda-overriding-header "Projects")
+              (org-agenda-files
+               (quote
+                ("/Users/clinton/Dropbox/org/projects.org")))))))))
 
 #+end_src
 
-** org journal
+*** org journal
 
 #+begin_src emacs-lisp
 
@@ -277,38 +291,39 @@ Don't let custom-set-variables dirty the init.el file.
 
 #+end_src
  
-** org roam
+*** org roam
 
 #+begin_src emacs-lisp
+  (if (not (string= (system-name) "Clinton-Boys-MacBook-Pro.local"))
+    ; Do not load org-roam on my work machine
+  (use-package org-roam
+          :hook 
+          (after-init . org-roam-mode)
+          :custom
+          (org-roam-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
+          :bind (:map org-roam-mode-map
+                  (("C-c n l" . org-roam)
+                   ("C-c n f" . org-roam-find-file)
+                   ("C-c n b" . org-roam-switch-to-buffer)
+                   ("C-c n g" . org-roam-show-graph))
+                  :map org-mode-map
+                  (("C-c i" . org-roam-insert))))  
 
-(use-package org-roam
-        :hook 
-        (after-init . org-roam-mode)
-        :custom
-        (org-roam-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
-        :bind (:map org-roam-mode-map
-                (("C-c n l" . org-roam)
-                 ("C-c n f" . org-roam-find-file)
-                 ("C-c n b" . org-roam-switch-to-buffer)
-                 ("C-c n g" . org-roam-show-graph))
-                :map org-mode-map
-                (("C-c i" . org-roam-insert))))  
+  (setq org-roam-db-location "/Users/clinton/org-roam.db")
+  (add-hook 'after-init-hook 'ivy-mode)
+  (setq org-roam-capture-templates
+    '(("d" "default" plain (function org-roam-capture--get-point)
+       "%?"
+       :file-name "%<%Y%m%d%H%M%S>-${slug}"
+       :head "#+TITLE: ${title}\n"
+       :unnarrowed t)))
 
-(setq org-roam-db-location "/Users/clinton/org-roam.db")
-(add-hook 'after-init-hook 'ivy-mode)
-(setq org-roam-capture-templates
-  '(("d" "default" plain (function org-roam-capture--get-point)
-     "%?"
-     :file-name "%<%Y%m%d%H%M%S>-${slug}"
-     :head "#+TITLE: ${title}\n"
-     :unnarrowed t)))
+  (use-package 'deft)
+  (global-set-key "\C-cd" 'deft)
+  (add-hook 'deft-mode-hook (lambda () (visual-line-mode 0)))
+  (setq-default truncate-lines t)
+  (setq deft-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
 
-(use-package 'deft)
-(global-set-key "\C-cd" 'deft)
-(add-hook 'deft-mode-hook (lambda () (visual-line-mode 0)))
-(setq-default truncate-lines t)
-(setq deft-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
-
-(org-reload)
-
+  (org-reload)
+)
 #+end_src
