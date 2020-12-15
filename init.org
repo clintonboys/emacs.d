@@ -38,7 +38,7 @@ Don't let custom-set-variables dirty the init.el file.
 #+begin_src emacs-lisp
 
   (defvar clinton/default-font-size 140)
-  (defvar clinton/default-variable-font-size 140)
+  (defvar clinton/default-variable-font-size 160)
 
   (setq inhibit-startup-message t)
 
@@ -65,7 +65,7 @@ Don't let custom-set-variables dirty the init.el file.
   (set-face-attribute 'fixed-pitch nil :font "Fira Code" :height clinton/default-font-size :weight 'light)
 
   ;; Set the variable pitch face
-  (set-face-attribute 'variable-pitch nil :font "Fira Code" :height clinton/default-variable-font-size :weight 'light)
+  (set-face-attribute 'variable-pitch nil :font "Fira Code" :height clinton/default-variable-font-size)
 
 #+end_src
 
@@ -126,28 +126,35 @@ Don't let custom-set-variables dirty the init.el file.
 
 #+end_src
 
-** Ivy and counsel
+** Ivy, counsel, helm
 
 #+begin_src emacs-lisp
 
-(use-package ivy
-  :diminish
-  :bind (("C-s" . swiper)
-	 ("C-x b" . 'ivy-switch-buffer))
-  :config
-  (ivy-mode 1))
+  (use-package ivy
+    :diminish
+    :bind (("C-s" . swiper)
+           ("C-x b" . 'ivy-switch-buffer))
+    :config
+    (ivy-mode 1))
 
-(use-package ivy-rich
-  :init
-  (ivy-rich-mode 1))
+  (use-package ivy-rich
+    :init
+    (ivy-rich-mode 1))
 
 
-(use-package counsel
-  :bind ("C-x b" . 'counsel-switch-buffer)
-  :custom
-  (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
-  :config
-  (counsel-mode 1))
+  (use-package counsel
+    :bind ("C-x b" . 'counsel-switch-buffer)
+    :custom
+    (counsel-linux-app-format-function #'counsel-linux-app-format-function-name-only)
+    :config
+    (counsel-mode 1))
+
+  (use-package helm
+    :ensure t
+    :init
+    (setq helm-mode-fuzzy-match t)
+    (setq helm-completion-in-region-fuzzy-match t)
+    (setq helm-candidate-number-list 50))
 
 #+end_src
 
@@ -173,8 +180,37 @@ Don't let custom-set-variables dirty the init.el file.
 
 #+begin_src emacs-lisp
 
-  (custom-set-faces
-   '(default ((t (:foreground "#bbc2cf"))))
+  ;; (defun clinton/org-font-setup ()
+  ;;   ;; Replace list hyphen with dot
+  ;;   (font-lock-add-keywords 'org-mode
+  ;;                           '(("^ *\\([-]\\) "
+  ;;                              (0 (prog1 () (compose-region (match-beginning 1) (match-end 1) "•"))))))
+
+  ;;   ;; Set faces for heading levels
+  ;;   (dolist (face '((org-level-1 . 1.2)
+  ;;                   (org-level-2 . 1.1)
+  ;;                   (org-level-3 . 1.05)
+  ;;                   (org-level-4 . 1.0)
+  ;;                   (org-level-5 . 1.1)
+  ;;                   (org-level-6 . 1.1)
+  ;;                   (org-level-7 . 1.1)
+  ;;                   (org-level-8 . 1.1)))
+  ;;     (set-face-attribute (car face) nil :font "ETBembo" :weight 'regular :height (cdr face)))
+
+  ;;   ;; Ensure that anything that should be fixed-pitch in Org files appears that way
+  ;;   (set-face-attribute 'org-block nil    :foreground nil :inherit 'fixed-pitch)
+  ;;   (set-face-attribute 'org-table nil    :inherit 'fixed-pitch)
+  ;;   (set-face-attribute 'org-formula nil  :inherit 'fixed-pitch)
+  ;;   (set-face-attribute 'org-code nil     :inherit '(shadow fixed-pitch))
+  ;;   (set-face-attribute 'org-table nil    :inherit '(shadow fixed-pitch))
+  ;;   (set-face-attribute 'org-verbatim nil :inherit '(shadow fixed-pitch))
+  ;;   (set-face-attribute 'org-special-keyword nil :inherit '(font-lock-comment-face fixed-pitch))
+  ;;   (set-face-attribute 'org-meta-line nil :inherit '(font-lock-comment-face fixed-pitch))
+  ;;   (set-face-attribute 'org-checkbox nil  :inherit 'fixed-pitch))
+
+
+   (custom-set-faces
+   '(default     ((t (:foreground "#BBC2CF"))))
    '(org-level-1 ((t (:foreground "#BF9D7A"))))
    '(org-level-2 ((t (:foreground "#E4E9CD"))))
    '(org-level-3 ((t (:foreground "#EBF2EA"))))
@@ -248,7 +284,8 @@ Don't let custom-set-variables dirty the init.el file.
              ((org-agenda-overriding-header "Projects")
               (org-agenda-files
                (quote
-                ("/Users/clinton/Dropbox/org/projects.org")))))))))
+                ("/Users/clinton/Dropbox/org/projects.org"))))))))
+       )
 
 #+end_src
 
