@@ -1,65 +1,79 @@
-;;* emacs configuration
-;;  Clinton Boys
-;;  December 2020
+* emacs configuration
+Clinton Boys
+December 2020
 
-;;**Miscellaneous
-;Don't let custom-set-variables dirty the init.el file.
+** Miscellaneous
+Don't let custom-set-variables dirty the init.el file.
+
+#+begin_src emacs-lisp
+
 (setq custom-file (concat user-emacs-directory "/custom.el"))
 
-;;** Package system
+#+end_src
+
+** Package system
+
+#+begin_src emacs-lisp
 
 (require 'package)
 
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")
-			 ("org" . "http://orgmode.org/elpa/")))
+                         ("org"   . "https://orgmode.org/elpa/")
+                         ("elpa"  . "https://elpa.gnu.org/packages/")
+            	     ("org"   . "http://orgmode.org/elpa/")))
 
 (package-initialize)
 (unless package-archive-contents
   (package-refresh-contents))
 
-  ;; Initialize use-package on non-Linux platforms
+; Initialize use-package on non-Linux platforms
 (unless (package-installed-p 'use-package)
   (package-install 'use-package))
 
 (require 'use-package)
 (setq use-package-always-ensure t)
 
-;;** Initial UI
+#+end_src
 
-(defvar clinton/default-font-size 140)
-(defvar clinton/default-variable-font-size 140)
+** Initial UI
 
-(setq inhibit-startup-message t)
+#+begin_src emacs-lisp
 
-(scroll-bar-mode -1)          ; Disable visible scrollbar
-(tool-bar-mode -1)            ; Disable the toolbar
-(tooltip-mode -1)             ; Disable tooltips
-(menu-bar-mode -1)            ; Disable the menu bar
+  (defvar clinton/default-font-size 140)
+  (defvar clinton/default-variable-font-size 140)
 
-(column-number-mode)
-(global-display-line-numbers-mode t)
+  (setq inhibit-startup-message t)
 
-;; Disable line numbers for some modes
-(dolist (mode '(org-mode-hook
-                term-mode-hook
-                shell-mode-hook
-                treemacs-mode-hook
-                eshell-mode-hook))
-  (add-hook mode (lambda () (display-line-numbers-mode 0))))
-(add-hook 'org-agenda-mode-hook (lambda () (display-line-numbers-mode -1)))
+  (scroll-bar-mode -1)          ; Disable visible scrollbar
+  (tool-bar-mode -1)            ; Disable the toolbar
+  (tooltip-mode -1)             ; Disable tooltips
+  (menu-bar-mode -1)            ; Disable the menu bar
 
-(set-face-attribute 'default nil :font "Fira Code" :height clinton/default-font-size :weight 'light)
+  (column-number-mode)
+  (global-display-line-numbers-mode t)
 
-;; Set the fixed pitch face
-(set-face-attribute 'fixed-pitch nil :font "Fira Code" :height clinton/default-font-size :weight 'light)
+  ;; Disable line numbers for some modes
+  (dolist (mode '(org-mode-hook
+		      org-agenda-mode-hook
+                  term-mode-hook
+                  shell-mode-hook
+                  treemacs-mode-hook
+                  eshell-mode-hook))
+    (add-hook mode (lambda () (display-line-numbers-mode 0))))
 
-;; Set the variable pitch face
-(set-face-attribute 'variable-pitch nil :font "Fira Code" :height clinton/default-variable-font-size :weight 'light)
+  (set-face-attribute 'default nil :font "Fira Code" :height clinton/default-font-size :weight 'light)
 
+  ;; Set the fixed pitch face
+  (set-face-attribute 'fixed-pitch nil :font "Fira Code" :height clinton/default-font-size :weight 'light)
 
-;;** Keybindings
+  ;; Set the variable pitch face
+  (set-face-attribute 'variable-pitch nil :font "Fira Code" :height clinton/default-variable-font-size :weight 'light)
+
+#+end_src
+
+** Keybindings
+
+#+begin_src emacs-lisp
 
 ;; Make ESC quit prompts
 (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
@@ -90,7 +104,11 @@
 ;;     "t"  '(:ignore t :which-key "toggles")
 ;;     "tt" '(counsel-load-theme :which-key "choose theme")))
 
-;; **Appearance
+#+end_src
+
+** Appearance
+
+#+begin_src emacs-lisp
 
 (use-package doom-themes
   :init (load-theme 'doom-one t))
@@ -106,9 +124,13 @@
 (setq ns-use-proxy-icon  nil)
 (setq frame-title-format "emacs")
 
-(setq-default line-spacing 0.35)
+(setq-default line-spacing 0.25)
 
-;;**Ivy and counsel
+#+end_src
+
+** Ivy and counsel
+
+#+begin_src emacs-lisp
 
 (use-package ivy
   :diminish
@@ -128,7 +150,12 @@
 ;;   :config
 ;;   (counsel-mode 1))
 
-;;**Helpful
+#+end_src
+
+** Helpful
+
+#+begin_src emacs-lisp
+
 ;;The helpful package improves emacs default help buffers.
 
 (use-package helpful
@@ -141,8 +168,11 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
+#+end_src
 
-;;**Org
+** Org
+
+#+begin_src emacs-lisp
 
 (custom-set-faces
  '(default ((t (:foreground "#bbc2cf"))))
@@ -156,7 +186,6 @@
   (org-indent-mode)
   (variable-pitch-mode 1)
   (visual-line-mode 1))
-
 
 (use-package org
   :pin org
@@ -207,8 +236,11 @@
       ("note" . ?n)
       ("idea" . ?i))))
 
+#+end_src
 
-;;**org journal
+** org journal
+
+#+begin_src emacs-lisp
 
 (use-package org-journal
   :bind
@@ -243,7 +275,12 @@
     (find-file (get-journal-file-yesterday)))
  )
 
-;;**org roam
+#+end_src
+ 
+** org roam
+
+#+begin_src emacs-lisp
+
 (use-package org-roam
         :hook 
         (after-init . org-roam-mode)
@@ -273,3 +310,5 @@
 (setq deft-directory "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
 
 (org-reload)
+
+#+end_src
