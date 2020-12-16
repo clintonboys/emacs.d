@@ -1,5 +1,8 @@
 (setq custom-file (concat user-emacs-directory "/custom.el"))
 
+(defvar clinton/personal-mac-name "clinton.local")
+(defvar clinton/work-mac-name "Clinton-Boys-MacBook-Pro.local")
+
 (require 'package)
 (setq package-archives '(("melpa" . "https://melpa.org/packages/")
                          ("elpa"  . "https://elpa.gnu.org/packages/")
@@ -277,8 +280,7 @@
     (find-file (get-journal-file-yesterday)))
  )
 
-(if (string= (system-name) "clinton.local")
-  ; Do not load org-roam on my work machine
+(if (string= (system-name) clinton/personal-mac-name)
 (use-package org-roam
         :hook 
         (after-init . org-roam-mode)

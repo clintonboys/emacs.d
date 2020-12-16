@@ -12,6 +12,15 @@ Don't let custom-set-variables dirty the init.el file.
 
 #+END_SRC
 
+Define names of different machines I will be using this configuration on.
+
+#+begin_src emacs-lisp
+
+  (defvar clinton/personal-mac-name "clinton.local")
+  (defvar clinton/work-mac-name "Clinton-Boys-MacBook-Pro.local")
+
+#+end_src
+
 ** Package system
 
 #+begin_src emacs-lisp
@@ -346,9 +355,10 @@ Don't let custom-set-variables dirty the init.el file.
  
 *** org roam
 
+Only load org roam on my personal machine. 
+
 #+begin_src emacs-lisp
-  (if (string= (system-name) "clinton.local")
-    ; Do not load org-roam on my work machine
+  (if (string= (system-name) clinton/personal-mac-name)
   (use-package org-roam
           :hook 
           (after-init . org-roam-mode)
