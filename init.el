@@ -49,34 +49,32 @@
 (set-face-attribute 'variable-pitch nil :font "Fira Code" :height clinton/default-variable-font-size)
 
 ;; Make ESC quit prompts
-(global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+ (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-(global-set-key (kbd "C-c w") 'count-words)
-(global-set-key (kbd "C-x /") 'comment-region)
-(global-set-key (kbd "C-c a") 'org-agenda)
-(global-set-key (kbd "C-c d") 'deft)
+ (global-set-key (kbd "C-c w") 'count-words)
+ (global-set-key (kbd "C-x /") 'comment-region)
+ (global-set-key (kbd "C-c a") 'org-agenda)
+ (global-set-key (kbd "C-c d") 'deft)
 
-;;;*** which-key
+ ;;;*** which-key
 
-(use-package which-key
-  :init
-  (setq which-key-separator " ")
-  (setq which-key-prefix-prefix "+")
-  (which-key-mode)
-  :diminish which-key-mode
+ (use-package which-key
+   :init
+   (setq which-key-separator " ")
+   (setq which-key-prefix-prefix "+")
+   (which-key-mode)
+   :diminish which-key-mode
+   :config
+   (setq which-key-idle-delay 1))
+
+(use-package general
   :config
-  (setq which-key-idle-delay 1))
+  (general-create-definer clinton/leader-keys
+    :prefix "C-q"))
 
-;; (use-package general
-;;   :config
-;;   (general-create-definer efs/leader-keys
-;;     :keymaps '(normal insert visual emacs)
-;;     :prefix "SPC"
-;;     :global-prefix "C-SPC")
-
-;;   (efs/leader-keys
-;;     "t"  '(:ignore t :which-key "toggles")
-;;     "tt" '(counsel-load-theme :which-key "choose theme")))
+  (clinton/leader-keys
+    "t"  '(:ignore t :which-key "toggles")
+    "tt" '(counsel-load-theme :which-key "choose theme")))
 
 (use-package doom-themes
   :init (load-theme 'doom-one t))
@@ -340,3 +338,38 @@
   )
 
 (use-package magit)
+
+(defun clinton/lsp-mode-setup ()
+  (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+  (lsp-headline-breadcrumb-mode))
+
+(use-package lsp-mode
+  :commands (lsp lsp-deferred)
+  :hook (lsp-mode . clinton/lsp-mode-setup)
+  :init
+  (setq lsp-keymap-prefix "C-c l")
+  :config
+  (lsp-enable-which-key-integration t))
+
+(use-package company
+  :after lsp-mode
+  :hook (lsp-mode . company-mode)
+  :bind (:map company-active-map
+         ("<tab>" . company-complete-selection))
+        (:map lsp-mode-map
+         ("<tab>" . company-indent-or-complete-common))
+  :custom
+  (company-minimum-prefix-length 1)
+  (company-idle-delay 0.0))
+
+(use-package python-mode
+:mode "\\.py\\'"
+:hook (python-mode . lsp-deferred)
+:config
+(setq python-indent-level 4))
+
+(use-package pyvenv
+  :config
+  (pyvenv-mode 1))
+
+(pyvenv-activate "~/.pyenv/versions/3.7.3/envs/via-algo-shift-optimizer-3.7.3")

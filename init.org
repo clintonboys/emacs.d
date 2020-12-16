@@ -82,35 +82,41 @@ Define names of different machines I will be using this configuration on.
 
 #+begin_src emacs-lisp
 
-  ;; Make ESC quit prompts
-  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
+   ;; Make ESC quit prompts
+   (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
-  (global-set-key (kbd "C-c w") 'count-words)
-  (global-set-key (kbd "C-x /") 'comment-region)
-  (global-set-key (kbd "C-c a") 'org-agenda)
-  (global-set-key (kbd "C-c d") 'deft)
+   (global-set-key (kbd "C-x /") 'comment-region)
 
-  ;;;*** which-key
+   (global-unset-key (kbd "C-l"))
+   (global-unset-key (kbd "C-x f"))
 
-  (use-package which-key
-    :init
-    (setq which-key-separator " ")
-    (setq which-key-prefix-prefix "+")
-    (which-key-mode)
-    :diminish which-key-mode
+   ;;;*** which-key
+
+   (use-package which-key
+     :init
+     (setq which-key-separator " ")
+     (setq which-key-prefix-prefix "+")
+     (which-key-mode)
+     :diminish which-key-mode
+     :config
+     (setq which-key-idle-delay 1))
+
+  (use-package general
     :config
-    (setq which-key-idle-delay 1))
+    (general-create-definer clinton/leader-c
+      :prefix "C-c")
+    (general-create-definer clinton/leader-l
+      :prefix "C-l"))
 
-  ;; (use-package general
-  ;;   :config
-  ;;   (general-create-definer efs/leader-keys
-  ;;     :keymaps '(normal insert visual emacs)
-  ;;     :prefix "SPC"
-  ;;     :global-prefix "C-SPC")
+    (clinton/leader-c
+      "a" 'org-agenda
+      "d" 'deft
+      "w" 'count-words)
 
-  ;;   (efs/leader-keys
-  ;;     "t"  '(:ignore t :which-key "toggles")
-  ;;     "tt" '(counsel-load-theme :which-key "choose theme")))
+    (clinton/leader-l
+      "d" 'xref-find-definitions
+      "r" 'xref-find-references
+      "t" '(counsel-load-theme :which-key "choose theme"))
 
 #+end_src
 
@@ -352,7 +358,7 @@ Define names of different machines I will be using this configuration on.
  )
 
 #+end_src
- 
+
 *** org roam
 
 Only load org roam on my personal machine. 
@@ -440,5 +446,66 @@ Only load org roam on my personal machine.
 #+begin_src emacs-lisp
 
   (use-package magit)
+
+#+end_src
+
+** Languages
+
+#+begin_src emacs-lisp
+
+  (defun clinton/lsp-mode-setup ()
+    (setq lsp-headerline-breadcrumb-segments '(path-up-to-project file symbols))
+    (lsp-headline-breadcrumb-mode))
+
+  (use-package lsp-mode
+    :commands (lsp lsp-deferred)
+    :hook (lsp-mode . clinton/lsp-mode-setup)
+    :init
+    (setq lsp-keymap-prefix "C-c l")
+    :config
+    (lsp-enable-which-key-integration t))
+
+  (use-package lsp-ui
+    :hook (lsp-mode . lsp-ui-mode)
+    :config
+    (setq lsp-ui-sideline-enable t)
+    (setq lsp-ui-sideline-show-hover nil)
+    (setq lsp-ui-doc-position 'bottom)
+    (lsp-ui-doc-show))
+
+  (use-package flycheck
+    :defer t
+    :hook (lsp-mode . flycheck-mode))
+
+
+  (use-package company
+    :after lsp-mode
+    :hook (lsp-mode . company-mode)
+    :bind (:map company-active-map
+           ("<tab>" . company-complete-selection))
+          (:map lsp-mode-map
+           ("<tab>" . company-indent-or-complete-common))
+    :custom
+    (company-minimum-prefix-length 1)
+    (company-idle-delay 0.0))
+
+#+end_src
+
+*** Python
+
+#+begin_src emacs-lisp
+
+    (use-package python-mode
+    :mode "\\.py\\'"
+    :hook (python-mode . lsp-deferred)
+    :config
+    (setq python-indent-level 4))
+
+    (use-package pyvenv
+      :config
+      (pyvenv-mode 1))
+
+    (pyvenv-activate "~/.pyenv/versions/3.7.3/envs/via-algo-shift-optimizer-3.7.3")
+
 
 #+end_src
