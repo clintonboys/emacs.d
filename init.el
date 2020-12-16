@@ -51,10 +51,10 @@
 ;; Make ESC quit prompts
  (global-set-key (kbd "<escape>") 'keyboard-escape-quit)
 
- (global-set-key (kbd "C-c w") 'count-words)
  (global-set-key (kbd "C-x /") 'comment-region)
- (global-set-key (kbd "C-c a") 'org-agenda)
- (global-set-key (kbd "C-c d") 'deft)
+
+ (global-unset-key (kbd "C-l"))
+ (global-unset-key (kbd "C-x f"))
 
  ;;;*** which-key
 
@@ -69,12 +69,20 @@
 
 (use-package general
   :config
-  (general-create-definer clinton/leader-keys
-    :prefix "C-q"))
+  (general-create-definer clinton/leader-c
+    :prefix "C-c")
+  (general-create-definer clinton/leader-l
+    :prefix "C-l"))
 
-  (clinton/leader-keys
-    "t"  '(:ignore t :which-key "toggles")
-    "tt" '(counsel-load-theme :which-key "choose theme")))
+  (clinton/leader-c
+    "a" 'org-agenda
+    "d" 'deft
+    "w" 'count-words)
+
+  (clinton/leader-l
+    "d" 'xref-find-definitions
+    "r" 'xref-find-references
+    "t" '(counsel-load-theme :which-key "choose theme"))
 
 (use-package doom-themes
   :init (load-theme 'doom-one t))
@@ -103,7 +111,6 @@
   :init
   (ivy-rich-mode 1))
 
-
 (use-package counsel
   :bind ("C-x b" . 'counsel-switch-buffer)
   :custom
@@ -117,6 +124,8 @@
   (setq helm-mode-fuzzy-match t)
   (setq helm-completion-in-region-fuzzy-match t)
   (setq helm-candidate-number-list 50))
+
+(add-hook 'after-init-hook 'global-company-mode)
 
 ;;The helpful package improves emacs default help buffers.
 
@@ -351,9 +360,23 @@
   :config
   (lsp-enable-which-key-integration t))
 
+(use-package lsp-ui
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+  (setq lsp-ui-sideline-enable t)
+  (setq lsp-ui-sideline-show-hover nil)
+  (setq lsp-ui-doc-position 'bottom)
+  (lsp-ui-doc-show))
+
+(use-package flycheck
+  :defer t
+  :hook (lsp-mode . flycheck-mode))
+
+
 (use-package company
   :after lsp-mode
-  :hook (lsp-mode . company-mode)
+  :hook
+  (lsp-mode . company-mode)
   :bind (:map company-active-map
          ("<tab>" . company-complete-selection))
         (:map lsp-mode-map
