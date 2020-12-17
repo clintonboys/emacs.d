@@ -139,13 +139,13 @@
   ([remap describe-variable] . counsel-describe-variable)
   ([remap describe-key] . helpful-key))
 
-(use-package epa-file
-    :config
-    (setq epa-file-encrypt-to '("clintonboys@icloud.com"))
-    :custom
-    (epa-file-select-keys 'silent))
-(custom-set-variables '(epg-gpg-program  "/usr/local/MacGPG2/bin/gpg2"))
-(epa-file-enable)
+;; (use-package epa-file
+;;     :config
+;;     (setq epa-file-encrypt-to '("clintonboys@icloud.com"))
+;;     :custom
+;;     (epa-file-select-keys 'silent))
+;; (custom-set-variables '(epg-gpg-program  "/usr/local/MacGPG2/bin/gpg2"))
+;; (epa-file-enable)
 
 ;; (defun clinton/org-font-setup ()
 ;;   ;; Replace list hyphen with dot
@@ -395,4 +395,7 @@
   :config
   (pyvenv-mode 1))
 
-(pyvenv-activate "~/.pyenv/versions/3.7.3/envs/via-algo-shift-optimizer-3.7.3")
+(if (string= (system-name) clinton/personal-mac-name)
+  (pyvenv-activate "~/.pyenv/versions/emacs-3.7")
+  (if (string= (system-name) clinton/work-mac-name)
+    (pyvenv-activate "~/.pyenv/versions/3.7.3/envs/via-algo-shift-optimizer-3.7.3")))

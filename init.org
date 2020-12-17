@@ -196,13 +196,13 @@ Define names of different machines I will be using this configuration on.
 
 #+BEGIN_SRC emacs-lisp
 
-  (use-package epa-file
-      :config
-      (setq epa-file-encrypt-to '("clintonboys@icloud.com"))
-      :custom
-      (epa-file-select-keys 'silent))
-  (custom-set-variables '(epg-gpg-program  "/usr/local/MacGPG2/bin/gpg2"))
-  (epa-file-enable)
+  ;; (use-package epa-file
+  ;;     :config
+  ;;     (setq epa-file-encrypt-to '("clintonboys@icloud.com"))
+  ;;     :custom
+  ;;     (epa-file-select-keys 'silent))
+  ;; (custom-set-variables '(epg-gpg-program  "/usr/local/MacGPG2/bin/gpg2"))
+  ;; (epa-file-enable)
 
 #+END_SRC
 
@@ -496,17 +496,19 @@ Only load org roam on my personal machine.
 
 #+begin_src emacs-lisp
 
-    (use-package python-mode
-    :mode "\\.py\\'"
-    :hook (python-mode . lsp-deferred)
+  (use-package python-mode
+  :mode "\\.py\\'"
+  :hook (python-mode . lsp-deferred)
+  :config
+  (setq python-indent-level 4))
+
+  (use-package pyvenv
     :config
-    (setq python-indent-level 4))
+    (pyvenv-mode 1))
 
-    (use-package pyvenv
-      :config
-      (pyvenv-mode 1))
-
-    (pyvenv-activate "~/.pyenv/versions/3.7.3/envs/via-algo-shift-optimizer-3.7.3")
-
+  (if (string= (system-name) clinton/personal-mac-name)
+    (pyvenv-activate "~/.pyenv/versions/emacs-3.7")
+    (if (string= (system-name) clinton/work-mac-name)
+      (pyvenv-activate "~/.pyenv/versions/3.7.3/envs/via-algo-shift-optimizer-3.7.3")))
 
 #+end_src
