@@ -704,15 +704,6 @@
              (progn
                (goto-char (point-max))
                (insert "\n/This note does not have a description yet./\n")))
-
-         ;; Add in backlinks because
-         ;; org-export-before-processing-hook won't be useful the
-         ;; way we are using a temp buffer
-         (let ((links (clinton/org-roam--backlinks-list f)))
-           (unless (string= links "")
-             (goto-char (point-max))
-             (insert (concat "\n* Links to this note\n") links)))
-
          (org-hugo-export-to-md)))
      files)))
 

@@ -53,6 +53,7 @@
 (org-babel-do-load-languages
   'org-babel-load-languages
   '((emacs-lisp . t)
+    (shell .t)
     (python . t)))
 
 (defun clinton/markdown-mode-setup ()
@@ -137,12 +138,14 @@
 (defun clinton/org-roam--backlinks-list (file)
           (if (org-roam--org-roam-file-p file)
               (--reduce-from
-
-               (concat acc
-(format "- [[file:%s][%s]]\n"
-          (file-relative-name (car it) "/Users/clinton/roam")
-          (title-capitalization (replace-regexp-in-string "-" " " (replace-regexp-in-string "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-" "" (replace-regexp-in-string "-org" "" (org-roam--title-to-slug (file-relative-name (car it) "/Users/clinton/roam")))))))                           
-                     )
+               (concat acc (format "- [[file:%s][%s]]\n"
+			       (file-relative-name (car it) "/Users/clinton/roam")
+			       (title-capitalization
+			 	  (replace-regexp-in-string "-" " "
+				     (replace-regexp-in-string "[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]-" ""
+							       (replace-regexp-in-string "-org" ""
+						(org-roam--title-to-slug (file-relative-name (car it) "/Users/clinton/roam"))))))
+	  ))
                ""
                (org-roam-db-query
 
@@ -188,7 +191,6 @@
       ;           :left :outer :join tags :on (= files:file tags:file)
        ;          :where (like tags:tags '%public%)]))));
          (message "Working on: %s" f)
-         (insert-file-contents f)
 
          (goto-char (point-min))
          (insert
@@ -200,14 +202,5 @@
              (progn
                (goto-char (point-max))
                (insert "\n/This note does not have a description yet./\n")))
-
-         ;; Add in backlinks because
-         ;; org-export-before-processing-hook won't be useful the
-         ;; way we are using a temp buffer
-         (let ((links (clinton/org-roam--backlinks-list f)))
-           (unless (string= links "")
-             (goto-char (point-max))
-             (insert (concat "\n* Links to this note\n") links)))
-
          (org-hugo-export-to-md)
-     f)
+     )
