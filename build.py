@@ -7,7 +7,7 @@ from pathlib import Path
 
 files = glob.glob("/Users/clinton/roam/*.org")
 
-DYNAMIC_FILES = {'/Users/clinton/roam/20210316202727-recent-updates.org': '/Users/clinton/dev/digital-garden/content/20210316202727-recent-updates.md'}
+DYNAMIC_FILES = {}
 i = 0
 
 with open('build.ninja', 'w') as ninja_file:
