@@ -1,3 +1,5 @@
+(setq gc-cons-threshold 100000000)
+
 (if (display-graphic-p)
     (progn
       (tool-bar-mode -1)            ; Disable the toolbar
@@ -39,8 +41,8 @@
   (exec-path-from-shell-copy-envs
    '("PYTHONPATH")))
 
-(defvar clinton/default-font-size 120)
-(defvar clinton/default-variable-font-size 120)
+(defvar clinton/default-font-size 140)
+(defvar clinton/default-variable-font-size 140)
 
 (setq inhibit-startup-message t)
 
@@ -51,7 +53,8 @@
 
 (column-number-mode)
 (global-display-line-numbers-mode t)
-
+(display-time-mode 1)
+(display-battery-mode 1)
 ;; Disable line numbers for some modes
 (dolist (mode '(org-mode-hook
 		    org-agenda-mode-hook
@@ -100,6 +103,7 @@
     "c" 'org-capture
     "d" 'deft
     "p" 'projectile-command-map
+    "r" 'revert-buffer
     "t" '(lambda () (interactive) (ansi-term "zsh"))
     "w" 'count-words
     "x" 'org-roam-to-hugo-md)
@@ -109,13 +113,14 @@
     "c" 'helm-make-projectile
     "d" 'xref-find-definitions
     "j" 'json-pretty-print    
+    "o" 'olivetti-mode
     "r" 'xref-find-references
     "t" '(counsel-load-theme :which-key "choose theme")
     "v" 'valign-table
     "x" 'org-babel-execute-src-block)
 
 (use-package doom-themes
-  :init (load-theme 'doom-one t))
+  :init (load-theme 'doom-vibrant t))
 (use-package all-the-icons)
 (use-package dtrt-indent)
 
@@ -241,6 +246,7 @@
           "~/Dropbox/org/creative.org"
           "~/Dropbox/org/personal.org"
           "~/Dropbox/org/projects.org"
+          "~/Dropbox/org/people.org"
           "~/Dropbox/org/work.org"))
 
  (setq org-agenda-prefix-format
@@ -286,13 +292,18 @@
               ((org-agenda-span
                 (quote day))
                      (org-agenda-files (quote ("/Users/clinton/Dropbox/org/personal.org"
-					            "/Users/clinton/Dropbox/org/projects.org"
-                                              "/Users/clinton/Dropbox/org/technical.org")))
+					             "/Users/clinton/Dropbox/org/projects.org"
+                                               "/Users/clinton/Dropbox/org/technical.org")))
                (org-deadline-warning-days 7)
                (org-agenda-overriding-header "Agenda\n")))
+      (tags-todo "+SCHEDULED=\"<today>\""
+              ((org-agenda-files (quote ("/Users/clinton/Dropbox/org/people.org")))
+               (org-agenda-overriding-header "People\n")
+               (org-agenda-prefix-format "  ")))
       (todo "TODO"
             ((org-agenda-overriding-header "To Refile\n")
                                   (org-agenda-prefix-format "  ")
+              
              (org-agenda-files
               (quote
                ("/Users/clinton/Dropbox/org/inbox.org")))))
@@ -343,7 +354,7 @@
   :custom
   (org-journal-date-prefix "#+title: ")
   (org-journal-file-format "%Y-%m-%d.org")
-  (org-journal-dir "/Users/clinton/Library/Mobile Documents/iCloud~is~workflow~my~workflows/Documents/org-roam/")
+  (org-journal-dir "/Users/clinton/roam/")
   (org-journal-date-format "%Y-%m-%d")
   :preface
   (defun get-journal-file-today ()
@@ -365,8 +376,7 @@
   (defun journal-file-yesterday ()
     "Creates and load a file based on yesterday's date."
     (interactive)
-    (find-file (get-journal-file-yesterday)))
- )
+    (find-file (get-journal-file-yesterday))))
 
 (use-package org-roam
         :hook 
@@ -412,11 +422,14 @@
  )
  (require 'deft)
 
+(use-package ob-mermaid)
+(setq ob-mermaid-cli-path "/opt/homebrew/bin/mmdc")
 (org-babel-do-load-languages
   'org-babel-load-languages
   '((emacs-lisp . t)
     (shell .t)
     (python . t)))
+(setq org-babel-python-command "/Users/clinton/miniforge3/envs/cenv/bin/python")
 
 (defvar clinton/init-org-file (concat user-emacs-directory "init.org"))
 (defvar clinton/init-el-file  (concat user-emacs-directory "init.el"))
@@ -443,6 +456,8 @@
          ("\\.markdown\\'" . markdown-mode))
   :init (setq markdown-command "multimarkdown")
   )
+
+(require 'olivetti)
 
 (use-package magit)
 
@@ -706,6 +721,61 @@
                (insert "\n/This note does not have a description yet./\n")))
          (org-hugo-export-to-md)))
      files)))
+
+(defun org-roam-to-hugo-md-private ()
+  (interactive)
+  ;; Make sure the author is set
+  (setq user-full-name "Clinton Boys")
+
+  (let ((files (mapcan
+                (lambda (x) x)
+                (org-roam-db-query
+                [:select :distinct [files:file]
+                 :from files
+                 :left :outer :join tags :on (= files:file tags:file)]))))
+    (mapc
+     (lambda (f)
+       ;; Use temporary buffer to prevent a buffer being opened for
+       ;; each note file.
+       (with-temp-buffer
+         (message "Working on: %s" f)
+         (insert-file-contents f)
+
+         (goto-char (point-min))
+         ;; Add in hugo tags for export. This lets you write the
+         ;; notes without littering HUGO_* tags everywhere
+         ;; HACK:
+         ;; org-export-output-file-name doesn't play nicely with
+         ;; temp buffers since it attempts to get the file name from
+         ;; the buffer. Instead we explicitely add the name of the
+         ;; exported .md file otherwise you would get prompted for
+         ;; the output file name on every note.
+         (insert
+          (format "#+HUGO_BASE_DIR: %s\n#+HUGO_SECTION: ./\n#+HUGO_SLUG: %s\n#+EXPORT_FILE_NAME: %s\n"
+                  "~/dev/private-zettelkasten"
+                  (file-path-to-slug (file-relative-name f "/Users/clinton/roam"))
+                  (file-path-to-md-file-name f)))
+
+         ;; If this is a placeholder note (no content in the
+         ;; body) then add default text. This makes it look ok when
+         ;; showing note previews in the index and avoids a headline
+         ;; followed by a headline in the note detail page.
+         (if (eq (clinton/org-roam--extract-note-body f) nil)
+             (progn
+               (goto-char (point-max))
+               (insert "\n/This note does not have a description yet./\n")))
+         (org-hugo-export-to-md)))
+     files)))
+
+(defvar script-name "~/.emacs.d/roam_build.sh")
+
+(defun call-my-script-with-word ()
+  (interactive)
+  (shell-command
+   (concat script-name 
+           " "
+           (thing-at-point 'word))))
+(global-set-key (kbd "C-c h") 'call-my-script-with-word)
 
 (use-package yasnippet
   :ensure t)

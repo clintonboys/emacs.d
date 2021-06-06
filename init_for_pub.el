@@ -190,14 +190,15 @@
      ;            :from files
       ;           :left :outer :join tags :on (= files:file tags:file)
        ;          :where (like tags:tags '%public%)]))));
-         (message "Working on: %s" f)
+         (message "Working on this: %s" f)
 
          (goto-char (point-min))
          (insert
-          (format "#+HUGO_BASE_DIR: %s\n#+HUGO_SECTION: ./\n#+HUGO_SLUG: %s\n#+EXPORT_FILE_NAME: %s\n"
+          (format "#+HUGO_BASE_DIR: %s\n#+HUGO_SECTION: ./\n#+HUGO_SLUG: %s\n#+EXPORT_FILE_NAME: %s\n#+EXPORT_HUGO_CUSTOM_FRONT_MATTER: :summary %s\n"
                   org-roam-publish-path
                   (file-path-to-slug (file-relative-name f "/Users/clinton/roam"))
-                  (file-path-to-md-file-name f)))
+                  (file-path-to-md-file-name f)
+		  (quote "\"This is a page on Mt. Solitary\"")))
          (if (eq (clinton/org-roam--extract-note-body f) nil)
              (progn
                (goto-char (point-max))
