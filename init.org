@@ -6,7 +6,7 @@
 
 ** Miscellaneous
 
-Make things faster, particularly in lsp-mode. 
+Make things faster, particularly in lsp-mode.
 
 #+BEGIN_SRC emacs-lisp
 (setq gc-cons-threshold 100000000)
@@ -159,8 +159,7 @@ Fix MacOS path issues with emacs.
       "p" 'projectile-command-map
       "r" 'revert-buffer
       "t" '(lambda () (interactive) (ansi-term "zsh"))
-      "w" 'count-words
-      "x" 'org-roam-to-hugo-md)
+      "w" 'count-words)
 
     (clinton/leader-l
       "a" 'avy-goto-char-2
@@ -715,7 +714,7 @@ lsp (Language Server Protocol) allows emacs to function as a very good IDE. This
 
      (use-package python-mode
      :mode "\\.py\\'"
-     :hook (python-mode . lsp-deferred)
+     ;:hook (python-mode . lsp-deferred)
      :config
      (setq python-indent-level 4))
 

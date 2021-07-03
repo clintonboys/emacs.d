@@ -105,8 +105,7 @@
     "p" 'projectile-command-map
     "r" 'revert-buffer
     "t" '(lambda () (interactive) (ansi-term "zsh"))
-    "w" 'count-words
-    "x" 'org-roam-to-hugo-md)
+    "w" 'count-words)
 
   (clinton/leader-l
     "a" 'avy-goto-char-2
@@ -542,7 +541,7 @@
 
 (use-package python-mode
    :mode "\\.py\\'"
-   :hook (python-mode . lsp-deferred)
+   ;:hook (python-mode . lsp-deferred)
    :config
    (setq python-indent-level 4))
 
